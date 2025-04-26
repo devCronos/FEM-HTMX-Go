@@ -1,48 +1,80 @@
-package main
+// go run cmd/main.go
+
+package main // Declares the package name - 'main' is special in Go as it defines an executable program, not a library
 
 import (
-	"html/template"
-	"io"
+	"fmt"
+	"html/template" // Package for generating HTML output with templates (similar to templating engines like Handlebars in JS)
+	"io"            // Provides basic interfaces for I/O primitives (readers, writers, etc.)
 
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/echo/v4"            // Echo is a high-performance web framework for Go (like Express.js in the Node.js world)
+	"github.com/labstack/echo/v4/middleware" // Echo's middleware components (similar to middleware in Express)
 )
 
+// Templates struct contains a pointer to template.Template
+// In Go, structs are somewhat similar to JS objects, but they're strongly typed
+// This struct will store our compiled templates
 type Templates struct {
-	templates *template.Template
+	templates *template.Template // The asterisk (*) denotes a pointer, which stores a memory address rather than a value directly
 }
 
+// Render is a method defined on the Templates struct
+// In Go, methods are functions attached to a specific type (similar to methods in JS classes)
+// This method implements Echo's Renderer interface, which requires a Render method with this signature
+// The (t *Templates) part is called a "receiver" and defines which type this method belongs to
 func (t *Templates) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
+    // fmt.Println(data) 
+
+	// ExecuteTemplate applies a named template to the specified data and writes the output to w
+	// This is similar to template engines in JS where you render a template with data
 	return t.templates.ExecuteTemplate(w, name, data)
 }
 
+// newTemplate is a constructor function that creates and returns a new Templates instance
+// In Go, it's a convention to use "new" prefix for constructor functions (whereas JS uses "new" keyword)
 func newTemplate() *Templates {
-	return &Templates{
-		templates: template.Must(template.ParseGlob("views/*.html")),
+	return &Templates{ // The ampersand (&) creates a pointer to the struct we're creating
+		// template.Must is a helper that panics if the template has an error (like throwing in JS)
+		// ParseGlob loads all templates matching the pattern (similar to requiring multiple template files in JS)
+		templates: template.Must(template.ParseGlob("views/*.tmpl")),
 	}
 }
 
-
+// Count is a struct that holds a single integer field
+// This is similar to creating a simple object in JS like { count: 0 }
+// In Go, struct field names are capitalized if they need to be accessible outside the package
 type Count struct {
-    Count int
+    Count int // An integer field to store our counter value
 }
 
+// main function is the entry point for Go programs (similar to the main JS file that gets executed)
 func main() {
-	e := echo.New()
-    e.Use(middleware.Logger())
+	e := echo.New() // Create a new instance of Echo (similar to creating an Express app in JS)
+    e.Use(middleware.Logger()) // Add logging middleware (similar to app.use(logger()) in Express)
 
-    count := Count{Count: 0}
+    // Initialize our counter - in Go, variables are strongly typed
+    // Unlike JS where variables are dynamically typed
+    count := Count{Count: 0} // Create a new Count struct and initialize the Count field to 0
+    
+    // Set the renderer for our Echo instance
+    // In JS, you'd similarly configure your Express app to use a template engine
     e.Renderer = newTemplate()
 
-    e.GET("/", func(c echo.Context) error {
+    e.GET("/", func(c echo.Context) error { // Anonymous function as route handler (like a callback in JS)
         count.Count++
-        return c.Render(200, "index",count)
+        // This is similar to res.render('index', {count: count}) in Express
+        return c.Render(200, "index", count)
     })
-    // e.POST("/count", func(c echo.Context) error {
-    //     count.Count++
-    //     return c.Render(200, "count",count)
-    // })
+    
 
-  
+    e.POST("/count", func(c echo.Context) error {
+        count.Count++
+        return c.Render(200, "count", count)
+    })
+
+    // Start the server on port 42069
+    // Note that in Go, unlike JS, errors are typically handled immediately rather than with promises/callbacks
+    // e.Logger.Fatal will log the error and exit the program if e.Start returns an error
+    // In JS you might do something like app.listen(42069).catch(err => console.error(err))
     e.Logger.Fatal(e.Start(":42069"))
 }

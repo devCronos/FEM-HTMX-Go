@@ -1,0 +1,7 @@
+- Static typing: Go requires you to declare variable types, while JavaScript is dynamically typed.
+- Pointers: Go uses explicit pointers with \* and & operators, which don't exist in JavaScript.
+- Error handling: Go typically uses return values for errors instead of exceptions like in JavaScript.
+- Methods: Go attaches methods to types with receivers, while JavaScript uses classes or prototype methods.
+- Packages: Go organizes code into packages with explicit imports, somewhat similar to ES modules but with stricter rules.
+- Structs vs Objects: Go uses structs with defined fields, while JavaScript uses more flexible objects.
+- Capitalization matters: In Go, capitalized names are exported (public), while lowercase names are package-private (similar to module exports in JS).

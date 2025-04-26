@@ -1,10 +1,8 @@
 ## Course [HTMX & Go with ThePrimeagen](https://frontendmasters.com/courses/htmx)
 
-<img src="https://static.frontendmasters.com/assets/courses/2024-01-21-htmx/thumb.webp" alt="HTMX & Go" width="150" height="150">
-
 Cloned https://github.com/ThePrimeagen/fem-htmx-proj
 
-### 💻 STATUS: NEXT - Moving from HTML to HTMX 00:21:53 - 00:25:50
+### 💻 STATUS: NEXT - Building a Form 00:43:04 - 00:49:39
 
 📖 Useful:
 
