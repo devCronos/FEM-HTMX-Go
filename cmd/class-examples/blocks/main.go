@@ -35,10 +35,21 @@ type Blocks struct {
     Blocks []Block
 }
 
+type Count struct {
+    Count int
+}
+
 func main() {
 	e := echo.New()
     e.Renderer = NewTemplates()
     e.Use(middleware.Logger())
+
+    count := Count{Count: 0}
+
+    e.GET("/", func(c echo.Context) error {
+        count.Count++
+        return c.Render(200, "index",count)
+    })
 
     e.GET("/blocks", func(c echo.Context) error {
         startStr := c.QueryParam("start")
