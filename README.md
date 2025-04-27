@@ -2,7 +2,7 @@
 
 Cloned https://github.com/ThePrimeagen/fem-htmx-proj
 
-### 💻 STATUS: NEXT - Building a Form 00:43:04 - 00:49:39
+### 💻 STATUS: NEXT - Error Handling 00:54:41 - 01:12:54
 
 📖 Useful:
 

@@ -23,7 +23,6 @@ type Templates struct {
 // This method implements Echo's Renderer interface, which requires a Render method with this signature
 // The (t *Templates) part is called a "receiver" and defines which type this method belongs to
 func (t *Templates) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
-    // fmt.Println(data) 
 
 	// ExecuteTemplate applies a named template to the specified data and writes the output to w
 	// This is similar to template engines in JS where you render a template with data
@@ -44,37 +43,84 @@ func newTemplate() *Templates {
 // This is similar to creating a simple object in JS like { count: 0 }
 // In Go, struct field names are capitalized if they need to be accessible outside the package
 type Count struct {
-    Count int // An integer field to store our counter value
+	Count int // An integer field to store our counter value
+}
+
+type Contact struct {
+	Name  string
+	Email string
+}
+
+func newContact(name string, email string) Contact {
+	return Contact{
+		Name:  name,
+		Email: email,
+	}
+}
+
+type Contacts = []Contact
+
+type Data struct {
+	Contacts Contacts
+}
+
+func newData() Data {
+	return Data{
+		Contacts: []Contact{
+			newContact("John Doe", "jd@gmail.com"),
+			newContact("Jane Doe", "jane@gmail.com"),
+		},
+	}
 }
 
 // main function is the entry point for Go programs (similar to the main JS file that gets executed)
 func main() {
-	e := echo.New() // Create a new instance of Echo (similar to creating an Express app in JS)
-    e.Use(middleware.Logger()) // Add logging middleware (similar to app.use(logger()) in Express)
+	e := echo.New()            // Create a new instance of Echo (similar to creating an Express app in JS)
+	e.Use(middleware.Logger()) // Add logging middleware (similar to app.use(logger()) in Express)
 
-    // Initialize our counter - in Go, variables are strongly typed
-    // Unlike JS where variables are dynamically typed
-    count := Count{Count: 0} // Create a new Count struct and initialize the Count field to 0
-    
-    // Set the renderer for our Echo instance
-    // In JS, you'd similarly configure your Express app to use a template engine
-    e.Renderer = newTemplate()
+	// Initialize our counter - in Go, variables are strongly typed
+	// Unlike JS where variables are dynamically typed
+	count := Count{Count: 0} // Create a new Count struct and initialize the Count field to 0
+	data := newData()
 
-    e.GET("/", func(c echo.Context) error { // Anonymous function as route handler (like a callback in JS)
-        count.Count++
-        // This is similar to res.render('index', {count: count}) in Express
-        return c.Render(200, "index", count)
-    })
-    
+	// Set the renderer for our Echo instance
+	// In JS, you'd similarly configure your Express app to use a template engine
+	e.Renderer = newTemplate()
 
-    e.POST("/count", func(c echo.Context) error {
-        count.Count++
-        return c.Render(200, "count", count)
-    })
+	e.GET("/", func(c echo.Context) error { // Anonymous function as route handler (like a callback in JS)
+		count.Count++
+		// This is similar to res.render('index', {count: count}) in Express
+		return c.Render(200, "test1", count)
+	})
+	e.GET("/x", func(c echo.Context) error {
+		fmt.Println("X route called")
+		return c.String(200, "X route works!")
+	})
+	e.POST("/count", func(c echo.Context) error {
+		count.Count++
+		return c.Render(200, "count", count)
+	})
 
-    // Start the server on port 42069
-    // Note that in Go, unlike JS, errors are typically handled immediately rather than with promises/callbacks
-    // e.Logger.Fatal will log the error and exit the program if e.Start returns an error
-    // In JS you might do something like app.listen(42069).catch(err => console.error(err))
-    e.Logger.Fatal(e.Start(":42069"))
+	e.GET("/contacts", func(c echo.Context) error { // Anonymous function as route handler (like a callback in JS)
+		// This is similar to res.render('index', {count: count}) in Express
+		return c.Render(200, "index", data)
+	})
+	e.POST("/contacts", func(c echo.Context) error {
+		name := c.FormValue("name")
+		email := c.FormValue("email")
+
+		data.Contacts = append(data.Contacts, newContact(name, email))
+		return c.Render(200, "index", data)
+	})
+
+	e.Any("/*", func(c echo.Context) error {
+		fmt.Println("Catch-all route called for:", c.Request().URL.Path)
+		return c.String(200, "Caught by catch-all")
+	})
+
+	// Start the server on port 42069
+	// Note that in Go, unlike JS, errors are typically handled immediately rather than with promises/callbacks
+	// e.Logger.Fatal will log the error and exit the program if e.Start returns an error
+	// In JS you might do something like app.listen(42069).catch(err => console.error(err))
+	e.Logger.Fatal(e.Start(":42069"))
 }
