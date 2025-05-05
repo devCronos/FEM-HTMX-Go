@@ -1,4 +1,4 @@
-// go run cmd/main.go
+//
 
 package main // Declares the package name - 'main' is special in Go as it defines an executable program, not a library
 
@@ -64,12 +64,45 @@ type Data struct {
 	Contacts Contacts
 }
 
+func (d *Data) hasEmail(email string) bool {
+	for _, contact := range d.Contacts {
+		if contact.Email == email {
+			return true
+		}
+	}
+	return false
+}
+
 func newData() Data {
 	return Data{
 		Contacts: []Contact{
-			newContact("John Doe", "jd@gmail.com"),
+			newContact("John Doe", "asd"),
 			newContact("Jane Doe", "jane@gmail.com"),
 		},
+	}
+}
+
+type FormData struct {
+	Values map[string]string
+	Errors map[string]string
+}
+
+func newFormData() FormData {
+	return FormData{
+		Values: make(map[string]string),
+		Errors: make(map[string]string),
+	}
+}
+
+type Page struct {
+	Data Data
+	Form FormData
+}
+
+func newPage() Page {
+	return Page{
+		Data: newData(),
+		Form: newFormData(),
 	}
 }
 
@@ -81,7 +114,7 @@ func main() {
 	// Initialize our counter - in Go, variables are strongly typed
 	// Unlike JS where variables are dynamically typed
 	count := Count{Count: 0} // Create a new Count struct and initialize the Count field to 0
-	data := newData()
+	page := newPage()
 
 	// Set the renderer for our Echo instance
 	// In JS, you'd similarly configure your Express app to use a template engine
@@ -103,20 +136,30 @@ func main() {
 
 	e.GET("/contacts", func(c echo.Context) error { // Anonymous function as route handler (like a callback in JS)
 		// This is similar to res.render('index', {count: count}) in Express
-		return c.Render(200, "index", data)
+		return c.Render(200, "index", page)
 	})
 	e.POST("/contacts", func(c echo.Context) error {
 		name := c.FormValue("name")
 		email := c.FormValue("email")
 
-		data.Contacts = append(data.Contacts, newContact(name, email))
-		return c.Render(200, "index", data)
+		if page.Data.hasEmail(email) {
+			formData := newFormData()
+			formData.Values["name"] = name
+			formData.Values["email"] = email
+			formData.Errors["email"] = "Email already exists"
+			fmt.Printf("Error thing: %+v\n", page)
+			return c.Render(422, "form", formData)
+		}
+
+		page.Data.Contacts = append(page.Data.Contacts, newContact(name, email))
+		fmt.Printf("Data passed to template: %+v\n", page)
+		return c.Render(200, "display", page)
 	})
 
-	e.Any("/*", func(c echo.Context) error {
-		fmt.Println("Catch-all route called for:", c.Request().URL.Path)
-		return c.String(200, "Caught by catch-all")
-	})
+	// e.Any("/*", func(c echo.Context) error {
+	// 	fmt.Println("Catch-all route called for:", c.Request().URL.Path)
+	// 	return c.String(200, "Caught by catch-all")
+	// })
 
 	// Start the server on port 42069
 	// Note that in Go, unlike JS, errors are typically handled immediately rather than with promises/callbacks

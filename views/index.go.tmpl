@@ -3,26 +3,52 @@
   <head>
     <title>Our First HTML Site!</title>
     <script src="https://unpkg.com/htmx.org@2.0.0"></script>
+    <script>
+document.addEventListener("DOMContentLoaded", (event) => {
+    document.body.addEventListener('htmx:beforeSwap', function(evt) {
+        if (evt.detail.xhr.status === 422) {
+            // allow 422 responses to swap as we are using this as a signal that
+            // a form was submitted with bad data and want to rerender with the
+            // errors
+            //
+            // set isError to false to avoid error logging in console
+            evt.detail.shouldSwap = true;
+            evt.detail.isError = false;
+        }
+    });
+})
+</script>
   </head>
   <body>
-    {{ template "form" .}}
+    {{ template "form" .Form}}
     <hr />
-    {{ template "display" .}}
+    {{ template "display" .Data}}
   </body>
 </html>
 {{ end }} 
 
 
 {{ block "form" . }} 
-    <form hx-post="/contacts">
-      name: <input type="text" name="name">
-      email: <input type="text" name="email">
+    <form hx-swap="outerHTML" hx-post="/contacts" >
+      name: <input
+      {{ if .Values.name }} value="{{.Values.name}}" {{ end }}
+       type="text" name="name">
+      email: <input
+      {{ if .Values.email }} value="{{.Values.email}}" {{ end }}
+       type="text" name="email">
+
+       {{ if .Errors.email}}
+        <div style="color: red;">
+          {{.Errors.email}}
+        </div>  
+       {{end}}
       <button type="submit">Create Contact</button>
     </form>
 {{ end }}
 
 {{ block "display" .}}
- <div style="display: flex; flex-direction: column;">
+<pre>{{ printf "%+v" . }}</pre>
+ <div id="contacts" style="display: flex; flex-direction: column;">
   {{range .Contacts}}
     <div>
       Name: <span>{{.Name}}</span>
@@ -31,3 +57,4 @@
   {{end}} 
  </div>
 {{end}} 
+
